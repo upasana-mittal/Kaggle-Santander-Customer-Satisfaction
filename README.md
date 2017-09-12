@@ -1,4 +1,4 @@
-# Santander-Customer-satisfaction-prediction
+# Kaggle Santander Customer satisfaction
 Customer satisfaction prediction using deep learning
 
 From frontline support teams to C-suites, customer satisfaction is a key measure of success. Unhappy customers don't stick around. What's more, unhappy customers rarely voice their dissatisfaction before leaving.
