@@ -6,3 +6,5 @@ From frontline support teams to C-suites, customer satisfaction is a key measure
 Santander Bank is asking Kagglers to help them identify dissatisfied customers early in their relationship. Doing so would allow Santander to take proactive steps to improve a customer's happiness before it's too late.
 
 Keras with tensorflow backend has been used for this data after data cleaning steps.
+
+Highest AUC Score achieved: 0.813416
