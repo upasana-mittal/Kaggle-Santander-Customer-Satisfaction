@@ -1,0 +1,79 @@
+import pandas as pd
+import numpy as np
+
+import sklearn
+from sklearn import preprocessing
+from sklearn.preprocessing import StandardScaler
+
+from keras.models import Sequential
+from keras.layers import Dense, Dropout
+from keras.wrappers.scikit_learn import KerasClassifier
+from keras.optimizers import SGD
+
+#Reading train file
+churn = pd.read_csv("/train.csv", sep = ",")
+
+#Removing Zero variance data
+churn = churn.loc[:, (churn != churn.iloc[0]).any()] 
+
+##Dropping Dusplicates
+churn = churn.drop_duplicates()
+
+#Taking out "target" and "ID" as we do not want to scale it.
+y = churn[["TARGET"]].values
+
+train_ID = churn['ID']
+
+churn = churn.drop(['ID','TARGET'], axis=1)
+
+##Reading test file and following same procedure as with train
+churn_test = pd.read_csv("/test.csv", sep = ",")
+churn_test = churn_test.loc[:, (churn_test != churn_test.iloc[0]).any()] 
+churn_test = churn_test.drop_duplicates()
+
+test_target = churn_test['ID']
+churn_test = churn_test.drop(['ID'], axis=1)
+##
+
+##Scaling
+min_max_scaler = preprocessing.MinMaxScaler()
+
+##train data
+np_scaled = min_max_scaler.fit_transform(churn)
+churn_norm = pd.DataFrame(np_scaled,columns = list(churn)[:335])
+
+##test data
+np_scaled_1 = min_max_scaler.fit_transform(churn_test)
+churn_test = pd.DataFrame(np_scaled_1,columns = list(churn_test)[:324])
+
+
+##Inserting "ID" column back to train data
+churn_norm.insert(0, 'ID', train_ID)
+
+X = churn_norm[list(churn_test)[:324]].values
+X_test = churn_test[list(churn_test)[:324]].values
+
+
+##Keras model
+model = Sequential()
+model.add(Dense(32, input_dim=324, activation='sigmoid'))
+model.add(Dropout(0.25))
+model.add(Dense(32, activation='sigmoid'))
+model.add(Dropout(0.25))
+model.add(Dense(32, activation='sigmoid'))
+model.add(Dense(1, activation='sigmoid'))
+optimizer = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(loss='binary_crossentropy', optimizer=optimizer , metrics=['binary_accuracy'])
+
+##fitting model
+model.fit(X, y, epochs=120, batch_size=10)
+
+##predition
+predictions = model.predict_proba(X_test)
+
+
+output = pd.DataFrame({'ID' : test_target.values, 'TARGET': predictions[:, -1]})
+output.to_csv('churn_keras_1.csv', index=False)
+
+
+##AUC Score: 0.813416
